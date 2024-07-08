@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
-    "@mui/material": "^5.16.0",
     "@shyft-to/js": "^0.2.39",
     "@solana/wallet-adapter-phantom": "^0.9.7",
     "@solana/web3.js": "^1.50.0",
@@ -42,8 +39,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.4.4"
   }
 }
