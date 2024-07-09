@@ -6,7 +6,7 @@ import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 
 const ListAll = () => {
 
-    const xKey = "<m6K49DCC-ibT6BUA>";
+    const xKey = "YPguVA8niasnf_7l";
     const [wallID, setWallID] = useState("");
     const [network, setNetwork] = useState("devnet");
     const [isLoaded, setLoaded] = useState(false);

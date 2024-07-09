@@ -10,7 +10,7 @@ const CreateNFT = () => {
     const [walletAddress, setWalletAddress] = useState(null);
     const [connStatus, setConnStatus] = useState(false);
     const [uri, setUri] = useState('');
-    const network = WalletAdapterNetwork.Devnet; // Hoặc WalletAdapterNetwork.Testnet hoặc WalletAdapterNetwork.Mainnet
+    const network = WalletAdapterNetwork.Devnet; 
 
     const connectWallet = async () => {
         const { solana } = window;
@@ -32,33 +32,32 @@ const CreateNFT = () => {
         const connection = new Connection(clusterApiUrl(network), 'confirmed');
         const wallet = new PhantomWalletAdapter();
         await wallet.connect();
-
+    
         try {
-            // Tạo metadata cho NFT bằng API Shyft
             const metadata = {
                 creator: wallet.publicKey.toString(),
-                image: 'https://nftstorage.link/ipfs/bafkreiajrjd7xozubfr7qk6xdktlo3k66jg6jkeamgjugd2p3w5w2pifve',
+                image: 'https://tse2.mm.bing.net/th?id=OIP.ZZf-7o5dlW_7TF5brWvIhAHaE8&pid=Api&P=0&h=180',
                 name: 'Nirvana',
                 symbol: 'NVN',
                 description: 'This is a test NFT',
                 attributes: [
                     { trait_type: 'anger', value: 0 },
-                    { trait_type: 'calmness', value: 100 },
+                    { trait_type: 'calmness', value: 100 }
                 ],
                 sellerFeeBasisPoints: 500,
             };
-
-            const response = await axios.post('https://api.shyft.to/sol/v1/nft/create', metadata, {
+    
+            const response = await axios.post('https://api.shyft.to/sol/v1/nft/create_detach', metadata, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': '<YOUR_API_KEY>' // Thay thế <YOUR_API_KEY> bằng API key của bạn
+                    'x-api-key': 'YPguVA8niasnf_7l'
                 }
             });
-
+    
             const uri = response.data.uri;
             setUri(uri);
             console.log(uri);
-
+    
             // Tạo NFT trên Solana với metadata
             const nftResponse = await axios.post('https://api.shyft.to/sol/v1/nft/mint', {
                 wallet: wallet.publicKey.toString(),
@@ -67,10 +66,10 @@ const CreateNFT = () => {
             }, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': '<YOUR_API_KEY>'
+                    'x-api-key': 'YPguVA8niasnf_7l'
                 }
             });
-
+    
             console.log('NFT Created: ', nftResponse.data);
         } catch (err) {
             console.error('Error creating NFT: ', err);
