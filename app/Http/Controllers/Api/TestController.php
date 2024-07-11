@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Test; 
+use App\Models\Test;
 use App\Models\UserAnswer;
 use App\Models\Question;
 use Illuminate\Support\Facades\DB;
@@ -18,13 +18,19 @@ class TestController extends Controller
         return response()->json(['tests' => $tests]);
     }
 
+    public function showQuestions($id){
+        $testQuestions = Question::where('test_id',$id)->get();
+
+        return response()->json(['testQuestions' => $testQuestions]);
+    }
+
     public function show($testId)
     {
         $test = Test::with('questions')->findOrFail($testId);
 
         return response()->json(['test' => $test]);
     }
-   
+
     public function showGrammarQuestions($testId)
     {
         $questions = Question::where('test_id', $testId)
@@ -33,7 +39,7 @@ class TestController extends Controller
 
         return response()->json(['questions' => $questions]);
     }
-    
+
     public function showVocabularyQuestions($testId)
     {
         $questions = Question::where('test_id', $testId)
@@ -67,13 +73,13 @@ class TestController extends Controller
                 return response()->json(['error' => 'Question not found.'], 404);
             }
 
-          
+
             $userAnswer = new UserAnswer();
-            $userAnswer->UserTestID = 1; 
+            $userAnswer->UserTestID = 1;
             $userAnswer->QuestionID = $questionId;
             $userAnswer->SelectedOption = $selectedOption;
 
-           
+
             if ($selectedOption == 'A') {
                 $userAnswer->TextAnswer = $question->OptionA;
             } elseif ($selectedOption == 'B') {
@@ -87,7 +93,7 @@ class TestController extends Controller
             $userAnswer->save();
         }
 
-        
+
         return response()->json(['message' => 'Answers submitted successfully.'], 200);
     }
 }

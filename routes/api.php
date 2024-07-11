@@ -8,7 +8,9 @@ Route::apiResource('tests', TestController::class);
 // Route cho Grammar
 Route::get('tests/{testId}/{questionType}/grammar', [TestController::class, 'showGrammarQuestions'])->name('tests.show_grammar');
 
-// Route cho Vocabulary
+// Lấy tất cả question của bài test
+Route::get('testQuestion/{id}',[TestController::class, 'showQuestions'])->name('test.show_questions');
+// Route cho Vocabulary)
 Route::get('tests/{testId}/{questionType}/vocabulary', [TestController::class, 'showVocabularyQuestions'])->name('tests.show_vocabulary');
 
 // Route cho Questions
