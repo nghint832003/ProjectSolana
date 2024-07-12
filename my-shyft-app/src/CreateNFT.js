@@ -1,8 +1,5 @@
-// src/components/CreateNFT.js
-
 import React, { useState } from 'react';
-import axios from 'axios';
-import { Connection, clusterApiUrl } from '@solana/web3.js';
+import { Connection, clusterApiUrl, PublicKey } from '@solana/web3.js';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
@@ -10,7 +7,7 @@ const CreateNFT = () => {
     const [walletAddress, setWalletAddress] = useState(null);
     const [connStatus, setConnStatus] = useState(false);
     const [uri, setUri] = useState('');
-    const network = WalletAdapterNetwork.Devnet; 
+    const network = WalletAdapterNetwork.Devnet;
 
     const connectWallet = async () => {
         const { solana } = window;
@@ -32,47 +29,40 @@ const CreateNFT = () => {
         const connection = new Connection(clusterApiUrl(network), 'confirmed');
         const wallet = new PhantomWalletAdapter();
         await wallet.connect();
-    
+
         try {
-            const metadata = {
-                creator: wallet.publicKey.toString(),
-                image: 'https://tse2.mm.bing.net/th?id=OIP.ZZf-7o5dlW_7TF5brWvIhAHaE8&pid=Api&P=0&h=180',
-                name: 'Nirvana',
-                symbol: 'NVN',
-                description: 'This is a test NFT',
-                attributes: [
-                    { trait_type: 'anger', value: 0 },
-                    { trait_type: 'calmness', value: 100 }
-                ],
-                sellerFeeBasisPoints: 500,
+            const myHeaders = new Headers();
+            myHeaders.append("x-api-key", "YPguVA8niasnf_7l");
+            myHeaders.append("Content-Type", "application/json");
+
+            const raw = JSON.stringify({
+                "network": "devnet",
+                "metadata_uri": "https://brown-loyal-stoat-734.mypinata.cloud/ipfs/QmR5Tyx3MvpiCKtjTVC4wVzRigpujCv9bnvQKU4ZMQzN5N",
+                "max_supply": 0,
+                "collection_address": "3F3G122hfRQ6E7aRQLhdXvabxtfhGHF89UVLvHR4pmn9",
+                "receiver": wallet.publicKey.toString(),
+                "fee_payer": wallet.publicKey.toString(),
+                "service_charge": {
+                    "receiver": "BFefyp7jNF5Xq2A4JDLLFFGpxLq5oPEFKBAQ46KJHW2R",
+                    "amount": 0.01
+                },
+                "priority_fee": 100
+            });
+
+            const requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
             };
-    
-            const response = await axios.post('https://api.shyft.to/sol/v1/nft/create_detach', metadata, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': 'YPguVA8niasnf_7l'
-                }
-            });
-    
-            const uri = response.data.uri;
-            setUri(uri);
-            console.log(uri);
-    
-            // Tạo NFT trên Solana với metadata
-            const nftResponse = await axios.post('https://api.shyft.to/sol/v1/nft/mint', {
-                wallet: wallet.publicKey.toString(),
-                connection: connection,
-                uri: uri
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': 'YPguVA8niasnf_7l'
-                }
-            });
-    
-            console.log('NFT Created: ', nftResponse.data);
-        } catch (err) {
-            console.error('Error creating NFT: ', err);
+
+            const response = await fetch("https://api.shyft.to/sol/v1/nft/create_from_metadata", requestOptions);
+            const result = await response.text();
+            console.log(result);
+            setUri(result);
+
+        } catch (error) {
+            console.error('Error creating NFT: ', error);
         }
     };
 
