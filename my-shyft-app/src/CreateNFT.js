@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Connection, clusterApiUrl, PublicKey } from '@solana/web3.js';
+import { Connection, clusterApiUrl } from '@solana/web3.js';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
