@@ -52,7 +52,6 @@
         <hr>
     @endforeach
 
-    <a href="{{ route('tests.score', ['testId' => $test->id]) }}" class="btn btn-primary">Back to Score</a>
     <a href="{{ route('tests.index') }}" class="btn btn-primary">Back to Home</a>
 </div>
 @endsection

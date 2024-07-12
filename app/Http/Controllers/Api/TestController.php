@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Test; 
+use App\Models\Test;
 use App\Models\UserAnswer;
 use App\Models\Question;
 use Illuminate\Support\Facades\DB;
@@ -62,13 +62,13 @@ class TestController extends Controller
                 return response()->json(['error' => 'Question not found.'], 404);
             }
 
-          
+
             $userAnswer = new UserAnswer();
-            $userAnswer->UserTestID = 1; 
+            $userAnswer->UserTestID = 1;
             $userAnswer->QuestionID = $questionId;
             $userAnswer->SelectedOption = $selectedOption;
 
-           
+
             if ($selectedOption == 'A') {
                 $userAnswer->TextAnswer = $question->OptionA;
             } elseif ($selectedOption == 'B') {

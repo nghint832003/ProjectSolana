@@ -41,7 +41,7 @@ class TestController extends Controller
 {
     $testId = $request->input('testId');
     $answers = $request->input('answers');
-    $score = 0;
+    $count = 0;
     $totalQuestions = Question::where('test_id', $testId)->count();
    
     if (!is_array($answers)) {
@@ -82,23 +82,26 @@ class TestController extends Controller
 
         $userAnswer->save();
         if ($selectedOption == $question->CorrectOption) {
-            $score++;
+            $count++;
         }
     }
 
 
    
-    return redirect()->route('tests.score', ['testId' => $testId, 'score' => $score,'total' => $totalQuestions])->with('success', 'Answers submitted successfully.');
+    return redirect()->route('tests.score', ['testId' => $testId, 'count' => $count,'total' => $totalQuestions])->with('success', 'Answers submitted successfully.');
 
 }
 
 public function showScore(Request $request, $testId)
 {
     $test = Test::findOrFail($testId);
-    $score = $request->input('score');
+    $count = $request->input('count');
     $total = $request->input('total');
+    $score=$total/100*$count;
 
-    return view('tests.score', compact('test', 'score','total'));
+
+
+    return view('tests.score', compact('test', 'score','total','count'));
 }
 public function showDetailedAnswers($testId)
 {
