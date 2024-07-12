@@ -22,23 +22,19 @@ Route::get('/', function () {
 
 Route::resource('/tests', TestController::class);
 
-
-// Route cho Grammar
-Route::get('tests/{testId}/{questionType}/grammar', [TestController::class, 'showGrammarQuestions'])->name('tests.show_grammar');
-
-// Route cho Reading
-
-Route::get('tests/{testId}/{questionType}/vocabulary', [TestController::class, 'showVocabularyQuestions'])->name('tests.show_vocabulary');
-
+Route::get('tests/{testId}/questions', [TestController::class, 'showQuestions'])->name('tests.show_questions');
 
 
 Route::get('/questions/create',[QuestionController::class, 'create'])->name('questions.create');
 Route::post('/questions', [QuestionController::class, 'store'])->name('questions.store');
 
 
-
-// web.php
 Route::post('/submit-answer', [TestController::class, 'submitAnswer'])->name('submitAnswer');
+
+Route::get('tests/{testId}/score', [TestController::class, 'showScore'])->name('tests.score');
+
+Route::get('tests/{testId}/answers', [TestController::class, 'showDetailedAnswers'])->name('tests.answers');
+
 
 
 

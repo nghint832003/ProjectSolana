@@ -25,42 +25,37 @@ class TestController extends Controller
         return response()->json(['test' => $test]);
     }
    
-    public function showGrammarQuestions($testId)
+    public function showQuestions($testId)
     {
-        $questions = Question::where('test_id', $testId)
-                             ->where('QuestionType', 'grammar')
-                             ->get();
+        $test = Test::findOrFail($testId);
+        $grammarQuestions = Question::where('test_id', $testId)->where('QuestionType', 'grammar')->get();
+        $vocabularyQuestions = Question::where('test_id', $testId)->where('QuestionType', 'vocabulary')->get();
 
-        return response()->json(['questions' => $questions]);
+        return response()->json([
+            'test' => $test,
+            'grammarQuestions' => $grammarQuestions,
+            'vocabularyQuestions' => $vocabularyQuestions
+        ]);
     }
-    
-    public function showVocabularyQuestions($testId)
-    {
-        $questions = Question::where('test_id', $testId)
-                             ->where('QuestionType', 'vocabulary')
-                             ->get();
-
-        return response()->json(['questions' => $questions]);
-    }
-
     public function submitAnswer(Request $request)
     {
         $testId = $request->input('testId');
         $answers = $request->input('answers');
+        $score = 0;
+        $totalQuestions = Question::where('test_id', $testId)->count();
 
-        // Kiểm tra dữ liệu answers
+     
         if (!is_array($answers)) {
             return response()->json(['error' => 'Answers data is invalid.'], 400);
         }
 
-        // Duyệt qua từng câu trả lời
+       
         foreach ($answers as $questionId => $selectedOption) {
-            // Kiểm tra và lưu câu trả lời
             if (empty($selectedOption)) {
                 return response()->json(['error' => 'Please answer all questions.'], 400);
             }
 
-            // Lấy thông tin câu hỏi từ QuestionID
+        
             $question = Question::find($questionId);
 
             if (!$question) {
@@ -85,9 +80,47 @@ class TestController extends Controller
             }
 
             $userAnswer->save();
+
+            if ($selectedOption == $question->CorrectOption) {
+                $score++;
+            }
         }
 
         
-        return response()->json(['message' => 'Answers submitted successfully.'], 200);
+        return response()->json([
+            'testId' => $testId,
+            'score' => $score,
+            'total' => $totalQuestions,
+            'message' => 'Answers submitted successfully.'
+        ]);
+    }
+    public function showScore(Request $request, $testId)
+    {
+        $test = Test::findOrFail($testId);
+        $score = $request->input('score');
+        $total = $request->input('total');
+
+        return response()->json([
+            'test' => $test,
+            'score' => $score,
+            'total' => $total
+        ]);
+    }
+
+    public function showDetailedAnswers($testId)
+    {
+        $test = Test::findOrFail($testId);
+        $questions = Question::where('test_id', $testId)->get();
+
+        $userAnswers = UserAnswer::where('UserTestID', 1)
+                                 ->whereIn('QuestionID', $questions->pluck('id')->toArray())
+                                 ->get()
+                                 ->keyBy('QuestionID');
+
+        return response()->json([
+            'test' => $test,
+            'questions' => $questions,
+            'userAnswers' => $userAnswers
+        ]);
     }
 }
