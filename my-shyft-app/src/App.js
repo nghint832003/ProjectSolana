@@ -5,6 +5,9 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import ListAll from "./ListAll";
 import CreateNFT from "./CreateNFT";
 
+import TestList from './components/TestList';
+import CreateTestPage from './components/CreateTestPage';
+
 
 function App() {
   return (
@@ -13,6 +16,9 @@ function App() {
         <Routes>
           <Route exact path="/" element={<ListAll />} />
           <Route exact path="/create" element={<CreateNFT />} />
+
+          <Route exact path="/showTest" element={<TestList  />} />
+          <Route path="/createTest" element={<CreateTestPage />} /> 
         </Routes>
       </Router>
     </div>
