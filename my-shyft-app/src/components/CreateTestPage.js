@@ -1,20 +1,69 @@
-
 import React, { useState } from 'react';
 import axios from 'axios';
 
 const CreateTestPage = () => {
     const [testName, setTestName] = useState('');
     const [questions, setQuestions] = useState([{
-        text: '',
-        optionA: '',
-        optionB: '',
-        optionC: '',
-        optionD: '',
-        correctOption: '',
-        questionType: ''
+        QuestionText: '',
+        OptionA: '',
+        OptionB: '',
+        OptionC: '',
+        OptionD: '',
+        CorrectOption: '',
+        QuestionType: ''
     }]);
     const [tests, setTests] = useState([]);
-    
+    const [errors, setErrors] = useState({});
+
+    const validateTestName = (name) => {
+        const errors = {};
+        if (!name) {
+            errors.TestName = 'Tên bài kiểm tra là bắt buộc';
+        } else if (name.length > 255) {
+            errors.TestName = 'Tên bài kiểm tra không được dài quá 255 ký tự';
+        }
+        return errors;
+    };
+
+    const validateQuestion = (question) => {
+        const errors = {};
+        if (!question.QuestionText) {
+            errors.QuestionText = 'Câu hỏi là bắt buộc';
+        }
+        if (question.OptionA && question.OptionA.length > 255) {
+            errors.OptionA = 'Lựa chọn A không được dài quá 255 ký tự';
+        }
+        if (question.OptionB && question.OptionB.length > 255) {
+            errors.OptionB = 'Lựa chọn B không được dài quá 255 ký tự';
+        }
+        if (question.OptionC && question.OptionC.length > 255) {
+            errors.OptionC = 'Lựa chọn C không được dài quá 255 ký tự';
+        }
+        if (question.OptionD && question.OptionD.length > 255) {
+            errors.OptionD = 'Lựa chọn D không được dài quá 255 ký tự';
+        }
+        if (question.CorrectOption && !['A', 'B', 'C', 'D'].includes(question.CorrectOption)) {
+            errors.CorrectOption = 'Lựa chọn đúng phải là một trong các giá trị A, B, C, D';
+        }
+        if (!question.QuestionType) {
+            errors.QuestionType = 'Loại câu hỏi là bắt buộc';
+        } else if (question.QuestionType.length > 50) {
+            errors.QuestionType = 'Loại câu hỏi không được dài quá 50 ký tự';
+        }
+        return errors;
+    };
+
+    const validateForm = () => {
+        const testNameErrors = validateTestName(testName);
+        const questionErrors = questions.map((question, index) => validateQuestion(question));
+
+        setErrors({
+            testName: testNameErrors,
+            questions: questionErrors
+        });
+
+        return Object.keys(testNameErrors).length === 0 && questionErrors.every(qErrors => Object.keys(qErrors).length === 0);
+    };
 
     const handleTestNameChange = (e) => {
         setTestName(e.target.value);
@@ -33,29 +82,31 @@ const CreateTestPage = () => {
 
     const handleAddQuestion = () => {
         setQuestions([...questions, {
-            text: '',
-            optionA: '',
-            optionB: '',
-            optionC: '',
-            optionD: '',
-            correctOption: '',
-            questionType: ''
+            QuestionText: '',
+            OptionA: '',
+            OptionB: '',
+            OptionC: '',
+            OptionD: '',
+            CorrectOption: '',
+            QuestionType: ''
         }]);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        addTest(testName, questions);
-        setTestName('');
-        setQuestions([{
-            text: '',
-            optionA: '',
-            optionB: '',
-            optionC: '',
-            optionD: '',
-            correctOption: '',
-            questionType: ''
-        }]);
+        if (validateForm()) {
+            addTest(testName, questions);
+            setTestName('');
+            setQuestions([{
+                QuestionText: '',
+                OptionA: '',
+                OptionB: '',
+                OptionC: '',
+                OptionD: '',
+                CorrectOption: '',
+                QuestionType: ''
+            }]);
+        }
     };
 
     const addTest = (testName, questions) => {
@@ -64,13 +115,13 @@ const CreateTestPage = () => {
                 const testId = response.data.id;
                 const questionPromises = questions.map(question => 
                     axios.post('http://127.0.0.1:8000/api/createQuestions', { 
-                        QuestionText: question.text, 
-                        OptionA: question.optionA,
-                        OptionB: question.optionB,
-                        OptionC: question.optionC,
-                        OptionD: question.optionD,
-                        CorrectOption: question.correctOption,
-                        QuestionType: question.questionType,
+                        QuestionText: question.QuestionText, 
+                        OptionA: question.OptionA,
+                        OptionB: question.OptionB,
+                        OptionC: question.OptionC,
+                        OptionD: question.OptionD,
+                        CorrectOption: question.CorrectOption,
+                        QuestionType: question.QuestionType,
                         test_id: testId 
                     })
                 );
@@ -79,7 +130,16 @@ const CreateTestPage = () => {
                         setTests([...tests, { id: testId, TestName: testName, questions }]);
                     })
                     .catch(error => {
-                        console.error('Có lỗi xảy ra khi thêm câu hỏi!', error);
+                        if (error.response) {
+                            console.error('Response data:', error.response.data);
+                            console.error('Response status:', error.response.status);
+                            console.error('Response headers:', error.response.headers);
+                        } else if (error.request) {
+                            console.error('Request data:', error.request);
+                        } else {
+                            console.error('Error', error.message);
+                        }
+                        console.error('Config:', error.config);
                     });
             })
             .catch(error => {
@@ -98,6 +158,7 @@ const CreateTestPage = () => {
                         value={testName} 
                         onChange={handleTestNameChange} 
                     />
+                    {errors.testName && <span className="error">{errors.testName.TestName}</span>}
                 </label>
                 <div>
                     <h3>Câu hỏi:</h3>
@@ -105,53 +166,60 @@ const CreateTestPage = () => {
                         <div key={index}>
                             <input
                                 type="text"
-                                name="text"
+                                name="QuestionText"
                                 placeholder="Câu hỏi"
-                                value={question.text}
+                                value={question.QuestionText}
                                 onChange={(e) => handleQuestionChange(index, e)}
                             />
+                            {errors.questions && errors.questions[index] && <span className="error">{errors.questions[index].QuestionText}</span>}
                             <input
                                 type="text"
-                                name="optionA"
+                                name="OptionA"
                                 placeholder="Lựa chọn A"
-                                value={question.optionA}
+                                value={question.OptionA}
                                 onChange={(e) => handleQuestionChange(index, e)}
                             />
+                            {errors.questions && errors.questions[index] && <span className="error">{errors.questions[index].OptionA}</span>}
                             <input
                                 type="text"
-                                name="optionB"
+                                name="OptionB"
                                 placeholder="Lựa chọn B"
-                                value={question.optionB}
+                                value={question.OptionB}
                                 onChange={(e) => handleQuestionChange(index, e)}
                             />
+                            {errors.questions && errors.questions[index] && <span className="error">{errors.questions[index].OptionB}</span>}
                             <input
                                 type="text"
-                                name="optionC"
+                                name="OptionC"
                                 placeholder="Lựa chọn C"
-                                value={question.optionC}
+                                value={question.OptionC}
                                 onChange={(e) => handleQuestionChange(index, e)}
                             />
+                            {errors.questions && errors.questions[index] && <span className="error">{errors.questions[index].OptionC}</span>}
                             <input
                                 type="text"
-                                name="optionD"
+                                name="OptionD"
                                 placeholder="Lựa chọn D"
-                                value={question.optionD}
+                                value={question.OptionD}
                                 onChange={(e) => handleQuestionChange(index, e)}
                             />
+                            {errors.questions && errors.questions[index] && <span className="error">{errors.questions[index].OptionD}</span>}
                             <input
                                 type="text"
-                                name="correctOption"
+                                name="CorrectOption"
                                 placeholder="Lựa chọn đúng"
-                                value={question.correctOption}
+                                value={question.CorrectOption}
                                 onChange={(e) => handleQuestionChange(index, e)}
                             />
+                            {errors.questions && errors.questions[index] && <span className="error">{errors.questions[index].CorrectOption}</span>}
                             <input
                                 type="text"
-                                name="questionType"
+                                name="QuestionType"
                                 placeholder="Loại câu hỏi"
-                                value={question.questionType}
+                                value={question.QuestionType}
                                 onChange={(e) => handleQuestionChange(index, e)}
                             />
+                            {errors.questions && errors.questions[index] && <span className="error">{errors.questions[index].QuestionType}</span>}
                         </div>
                     ))}
                 </div>
@@ -162,10 +230,10 @@ const CreateTestPage = () => {
             <ul>
                 {tests.map(test => (
                     <li key={test.id}>
-                        {test.name}
+                        {test.TestName}
                         <ul>
                             {test.questions.map((question, index) => (
-                                <li key={index}>{question.text}</li>
+                                <li key={index}>{question.QuestionText}</li>
                             ))}
                         </ul>
                     </li>
