@@ -1,58 +1,42 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Button from "@mui/material/Button";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
-// Đây là giao diện bên trong màn, cần tạo component layout để cho nội dung vào trong
 export default function DetailExam() {
-    const [questions, setQuestions] = useState([
-        {
-            id: 1,
-            questionTitle: "Question 1",
-            options: ["Option A", "Option B", "Option C"],
-            answer: 2,
-            isChooseAnswer: false,
-        },
-        {
-            id: 2,
-            questionTitle: "Question 1",
-            options: ["Option A", "Option B", "Option C"],
-            answer: 2,
-            isChooseAnswer: false,
-        },
-        {
-            id: 3,
-            questionTitle: "Question 1",
-            options: ["Option A", "Option B", "Option C"],
-            answer: 2,
-            isChooseAnswer: false,
-        },
-        {
-            id: 4,
-            questionTitle: "Question 1",
-            options: ["Option A", "Option B", "Option C"],
-            answer: 2,
-            isChooseAnswer: false,
-        },
-        {
-            id: 5,
-            questionTitle: "Question 1",
-            options: ["Option A", "Option B", "Option C"],
-            answer: 2,
-            isChooseAnswer: false,
-        },
-        {
-            id: 6,
-            questionTitle: "Question 1",
-            options: ["Option A", "Option B", "Option C"],
-            answer: 2,
-            isChooseAnswer: false,
-        },
-    ]);
-    const timeRemainSecond = 30 * 60;
+    const [questions, setQuestions] = useState([]);
+    const [userAnswers, setUserAnswers] = useState({});
+    const [submitted, setSubmitted] = useState(false);
+    const [results, setResults] = useState({});
+
+    useEffect(() => {
+        axios.get('http://127.0.0.1:8000/api/testQuestion/2')
+            .then(response => {
+                setQuestions(response.data.testQuestions || []);
+            })
+            .catch(error => {
+                console.error("There was an error fetching the questions!", error);
+            });
+    }, []);
+
+    const handleAnswerChange = (questionId, answer) => {
+        setUserAnswers({ ...userAnswers, [questionId]: answer });
+    };
+
+    const handleSubmit = () => {
+        const newResults = {};
+        questions.forEach(question => {
+            newResults[question.id] = userAnswers[question.id] === question.CorrectOption;
+        });
+        setResults(newResults);
+        setSubmitted(true);
+    };
+
     return (
         <div className="bg-[#efefef] p-[24px]">
             {/* TITLE */}
@@ -65,15 +49,12 @@ export default function DetailExam() {
                 {/* Content */}
                 <div className="exam-content bg-white w-[80%] rounded-[8px] p-[16px]">
                     <p className="note italic">
-                        Choose the correct letter A, B or C
+                        Choose the correct letter A, B, C, or D
                     </p>
                     <div className="questions">
-                        {questions.map((question, index) => {
-                            return (
-                                <div
-                                    key={question.id}
-                                    className="relative py-2"
-                                >
+                        {questions.length > 0 ? (
+                            questions.map((question, index) => (
+                                <div key={question.id} className="relative py-2">
                                     <div className="absolute t-0 l-0 question-index p-4 rounded-[50%] bg-blue-100 w-[36px] h-[36px] flex items-center justify-center">
                                         {index + 1}
                                     </div>
@@ -82,37 +63,58 @@ export default function DetailExam() {
                                             id="demo-radio-buttons-group-label"
                                             className="!text-black"
                                         >
-                                            {question.questionTitle}
+                                            {question.QuestionText}
                                         </FormLabel>
                                         <RadioGroup
                                             aria-labelledby="demo-radio-buttons-group-label"
-                                            name="radio-buttons-group"
-                                            onChange={() => {
-                                                question.isChooseAnswer = true;
-                                                console.log(questions);
-                                            }}
+                                            name={`radio-buttons-group-${question.id}`}
+                                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                                         >
                                             <FormControlLabel
-                                                value={1}
+                                                value="A"
                                                 className="!p-0"
                                                 control={<Radio />}
-                                                label={`A. ${question.options[0]}`}
+                                                label={`A. ${question.OptionA}`}
+                                                disabled={submitted}
                                             />
                                             <FormControlLabel
-                                                value={2}
+                                                value="B"
                                                 control={<Radio />}
-                                                label={`B. ${question.options[1]}`}
+                                                label={`B. ${question.OptionB}`}
+                                                disabled={submitted}
                                             />
                                             <FormControlLabel
-                                                value={3}
+                                                value="C"
                                                 control={<Radio />}
-                                                label={`C. ${question.options[2]}`}
+                                                label={`C. ${question.OptionC}`}
+                                                disabled={submitted}
+                                            />
+                                            <FormControlLabel
+                                                value="D"
+                                                control={<Radio />}
+                                                label={`D. ${question.OptionD}`}
+                                                disabled={submitted}
                                             />
                                         </RadioGroup>
+                                        {submitted && (
+                                            <div className="mt-2">
+                                                {results[question.id] ? (
+                                                    <div className="text-green-600 flex items-center">
+                                                        <CheckCircleIcon /> Đúng
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-red-600 flex items-center">
+                                                        <CancelIcon /> Sai. Đáp án đúng: {question.CorrectOption}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            );
-                        })}
+                            ))
+                        ) : (
+                            <div>No questions available</div>
+                        )}
                     </div>
                 </div>
                 {/* Time & Overview */}
@@ -122,10 +124,15 @@ export default function DetailExam() {
                     <h3 className="text-red-500 text-[24px] font-bold">
                         {/* {timeRemainSecond} */} 30:00
                     </h3>
-                    <Button variant="contained" className="w-[100%] !my-3">
-                        NỘP BÀI
-                    </Button>
-
+                    {!submitted && (
+                        <Button
+                            variant="contained"
+                            className="w-[100%] !my-3"
+                            onClick={handleSubmit}
+                        >
+                            NỘP BÀI
+                        </Button>
+                    )}
                     {/* OVERVIEW */}
                     <p className="text-[14px] text-red-700">
                         Khôi phục/Lưu bài làm
@@ -135,16 +142,14 @@ export default function DetailExam() {
                         để đánh dấu review
                     </p>
                     <div className="status-questions flex items-center gap-1 flex-wrap">
-                        {questions.map((ques, index) => {
-                            return (
-                                <div
-                                    key={ques.id}
-                                    className="!w-[36px] !h-[36px] border border-1 border-gray rounded-[12px] flex items-center justify-center"
-                                >
-                                    {index + 1}
-                                </div>
-                            );
-                        })}
+                        {questions.length > 0 && questions.map((ques, index) => (
+                            <div
+                                key={ques.id}
+                                className="!w-[36px] !h-[36px] border border-1 border-gray rounded-[12px] flex items-center justify-center"
+                            >
+                                {index + 1}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
