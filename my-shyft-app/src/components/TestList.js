@@ -83,6 +83,18 @@ const TestList = () => {
             });
     };
 
+    const handleDeleteQuestion = (questionId) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa câu hỏi này không?')) {
+            axios.delete(`http://127.0.0.1:8000/api/deleteQuestion/${questionId}`)
+                .then(response => {
+                    setQuestions(questions.filter(q => q.id !== questionId));
+                })
+                .catch(error => {
+                    setError(error);
+                });
+        }
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -145,7 +157,8 @@ const TestList = () => {
                                             <td>{question.CorrectOption}</td>
                                             <td>{question.QuestionType}</td>
                                             <td>
-                                                <button className="btn btn-secondary" onClick={() => openEditModal(question)}>Edit</button>
+                                                <button className="btn btn-secondary mr-2" onClick={() => openEditModal(question)}>Edit</button>
+                                                <button className="btn btn-danger" onClick={() => handleDeleteQuestion(question.id)}>Delete</button>
                                             </td>
                                         </tr>
                                     ))}
