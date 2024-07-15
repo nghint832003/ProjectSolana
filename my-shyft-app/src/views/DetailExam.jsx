@@ -1,3 +1,4 @@
+// views/Detail.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Button from "@mui/material/Button";
@@ -13,6 +14,8 @@ export default function DetailExam() {
     const [userAnswers, setUserAnswers] = useState({});
     const [submitted, setSubmitted] = useState(false);
     const [results, setResults] = useState({});
+    const [correctCount, setCorrectCount] = useState(0);
+    const [timeLeft, setTimeLeft] = useState(3 * 60); // 3 minutes in seconds
 
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/api/testQuestion/2')
@@ -24,17 +27,42 @@ export default function DetailExam() {
             });
     }, []);
 
+    useEffect(() => {
+        if (timeLeft <= 0) {
+            handleSubmit();
+            return;
+        }
+
+        const timerId = setInterval(() => {
+            setTimeLeft(prevTime => prevTime - 1);
+        }, 1000);
+
+        return () => clearInterval(timerId);
+    }, [timeLeft]);
+
     const handleAnswerChange = (questionId, answer) => {
         setUserAnswers({ ...userAnswers, [questionId]: answer });
     };
 
     const handleSubmit = () => {
         const newResults = {};
+        let count = 0;
         questions.forEach(question => {
-            newResults[question.id] = userAnswers[question.id] === question.CorrectOption;
+            const isCorrect = userAnswers[question.id] === question.CorrectOption;
+            newResults[question.id] = isCorrect;
+            if (isCorrect) {
+                count++;
+            }
         });
         setResults(newResults);
+        setCorrectCount(count);
         setSubmitted(true);
+    };
+
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
     return (
@@ -122,7 +150,7 @@ export default function DetailExam() {
                     {/* TIME */}
                     <p>Thời gian còn lại:</p>
                     <h3 className="text-red-500 text-[24px] font-bold">
-                        {/* {timeRemainSecond} */} 30:00
+                        {formatTime(timeLeft)}
                     </h3>
                     {!submitted && (
                         <Button
@@ -142,6 +170,9 @@ export default function DetailExam() {
                         để đánh dấu review
                     </p>
                     <div className="status-questions flex items-center gap-1 flex-wrap">
+                        {submitted && (
+                            <p>{`Đúng: ${correctCount}/${questions.length}`}</p>
+                        )}
                         {questions.length > 0 && questions.map((ques, index) => (
                             <div
                                 key={ques.id}

@@ -1,3 +1,4 @@
+//views/Exams.jsx
 import { Link } from 'react-router-dom';
 import ExamItem from '../components/ExamItem'
 // Đây là giao diện bên trong màn, cần tạo component layout để cho nội dung vào trong
