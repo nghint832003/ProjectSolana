@@ -1,8 +1,4 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
-=======
-import axios from 'axios';
->>>>>>> parent of 43895bd0 (update: Exams)
 import { Connection, clusterApiUrl, PublicKey } from '@solana/web3.js';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
