@@ -1,5 +1,5 @@
 // views/DetailExam.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from 'react-router-dom';
 import axios from "axios";
 import Button from "@mui/material/Button";
@@ -18,6 +18,9 @@ export default function DetailExam() {
     const [results, setResults] = useState({});
     const [correctCount, setCorrectCount] = useState(0);
     const [timeLeft, setTimeLeft] = useState(3 * 60); // 3 minutes in seconds
+    const [timeTaken, setTimeTaken] = useState(0); // time taken in seconds
+    const questionRefs = useRef({});
+    const timerIdRef = useRef(null);
 
     useEffect(() => {
         axios.get(`http://127.0.0.1:8000/api/testQuestion/${id}`)
@@ -35,11 +38,11 @@ export default function DetailExam() {
             return;
         }
 
-        const timerId = setInterval(() => {
+        timerIdRef.current = setInterval(() => {
             setTimeLeft(prevTime => prevTime - 1);
         }, 1000);
 
-        return () => clearInterval(timerId);
+        return () => clearInterval(timerIdRef.current);
     }, [timeLeft]);
 
     const handleAnswerChange = (questionId, answer) => {
@@ -47,6 +50,9 @@ export default function DetailExam() {
     };
 
     const handleSubmit = () => {
+        clearInterval(timerIdRef.current); // Stop the timer
+        setTimeTaken(3 * 60 - timeLeft); // Calculate time taken
+
         const newResults = {};
         let count = 0;
         questions.forEach(question => {
@@ -67,6 +73,10 @@ export default function DetailExam() {
         return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
+    const scrollToQuestion = (questionId) => {
+        questionRefs.current[questionId].scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
         <div className="bg-[#efefef] p-[24px]">
             {/* TITLE */}
@@ -79,7 +89,10 @@ export default function DetailExam() {
                 {/* Content */}
                 <div className="exam-content bg-white w-[80%] rounded-[8px] p-[16px]">
                     <h3>{submitted && (
-                            <p>{`Đúng: ${correctCount}/${questions.length}`}</p>
+                            <>
+                                <p>{`Đúng: ${correctCount}/${questions.length}`}</p>
+                                <p>{`Thời gian làm bài: ${formatTime(timeTaken)}`}</p>
+                            </>
                         )}</h3>
                     <p className="note italic">
                         Choose the correct letter A, B, C, or D
@@ -87,7 +100,11 @@ export default function DetailExam() {
                     <div className="questions">
                         {questions.length > 0 ? (
                             questions.map((question, index) => (
-                                <div key={question.id} className="relative py-2">
+                                <div
+                                    key={question.id}
+                                    className="relative py-2"
+                                    ref={el => (questionRefs.current[question.id] = el)}
+                                >
                                     <div className="absolute t-0 l-0 question-index p-4 rounded-[50%] bg-blue-100 w-[36px] h-[36px] flex items-center justify-center">
                                         {index + 1}
                                     </div>
@@ -179,7 +196,8 @@ export default function DetailExam() {
                         {questions.length > 0 && questions.map((ques, index) => (
                             <div
                                 key={ques.id}
-                                className="!w-[36px] !h-[36px] border border-1 border-gray rounded-[12px] flex items-center justify-center"
+                                className={`!w-[36px] !h-[36px] border border-1 border-gray rounded-[12px] flex items-center justify-center ${userAnswers[ques.id] ? 'bg-green-500' : ''}`}
+                                onClick={() => scrollToQuestion(ques.id)}
                             >
                                 {index + 1}
                             </div>
