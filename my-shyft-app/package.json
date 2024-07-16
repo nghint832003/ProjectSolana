@@ -5,8 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@mui/icons-material": "^5.16.1",
-    "@mui/material": "^5.16.0",
+    "@mui/material": "^5.16.2",
     "@shyft-to/js": "^0.2.39",
     "@solana/wallet-adapter-phantom": "^0.9.7",
     "@solana/web3.js": "^1.50.0",

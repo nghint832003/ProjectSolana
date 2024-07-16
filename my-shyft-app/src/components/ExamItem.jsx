@@ -13,9 +13,12 @@ export default function ExamItem({ data }) {
         <div className="rounded-[12px] border border-1 border-black-800 bg-[#efefef] p-[16px]">
             <h3 className="text-[16px] font-bold">{data.TestName}</h3>
             <div className="info-exam flex items-center gap-x-4 mt-2 text-gray-600 font-medium">
-                <div className="pr-3" style={{ borderRight: '1px solid gray' }}>
-                    <i className="fa-solid fa-clock"></i> 20 phút
-                </div>
+                <div className="pr-3" style={{ borderRight: '1px solid gray' }}> <i className="fa-solid fa-clock"></i> 40 phút</div>
+                <div className="pr-3" style={{ borderRight: '1px solid gray' }}><i className="fa-solid fa-pen-to-square"></i> 1234</div>
+                <div><i className="fa-solid fa-comment"></i> 1234</div>
+            </div>
+            <div className="structure flex items-center gap-x-4 my-2 text-gray-600 font-medium">
+                <div className="pr-3" style={{ borderRight: '1px solid gray' }}>4 phần thi</div>
                 <div>40 câu hỏi</div>
             </div>
             <div className="tag flex items-center">
