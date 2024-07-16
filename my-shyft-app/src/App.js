@@ -5,10 +5,13 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import ListAll from "./ListAll";
 import CreateNFT from "./CreateNFT";
 
-import TestList from './components/TestList';
-import CreateTestPage from './components/CreateTestPage';
+import TestList from "./components/TestList";
+import CreateTestPage from "./components/CreateTestPage";
+
+
 import DetailExam from "./views/DetailExam";
 import Exams from "./views/Exams";
+
 
 function App() {
   return (
