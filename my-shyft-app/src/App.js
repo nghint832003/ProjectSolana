@@ -25,7 +25,7 @@ function App() {
           <Route path="/createTest" element={<CreateTestPage />} /> 
                     
           <Route exact path="/create" element={<CreateNFT />} />
-          <Route exact path="/exam/detail" element={<DetailExam />} />
+          <Route path="/exam/detail/:id" element={<DetailExam />} />
           <Route exact path="/exam" element={<Exams />} />
         </Routes>
       </Router>

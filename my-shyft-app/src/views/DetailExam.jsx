@@ -1,5 +1,6 @@
-// views/Detail.jsx
+// views/DetailExam.jsx
 import React, { useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
 import axios from "axios";
 import Button from "@mui/material/Button";
 import Radio from "@mui/material/Radio";
@@ -10,6 +11,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 
 export default function DetailExam() {
+    const { id } = useParams();
     const [questions, setQuestions] = useState([]);
     const [userAnswers, setUserAnswers] = useState({});
     const [submitted, setSubmitted] = useState(false);
@@ -18,14 +20,14 @@ export default function DetailExam() {
     const [timeLeft, setTimeLeft] = useState(3 * 60); // 3 minutes in seconds
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/testQuestion/2')
+        axios.get(`http://127.0.0.1:8000/api/testQuestion/${id}`)
             .then(response => {
                 setQuestions(response.data.testQuestions || []);
             })
             .catch(error => {
                 console.error("There was an error fetching the questions!", error);
             });
-    }, []);
+    }, [id]);
 
     useEffect(() => {
         if (timeLeft <= 0) {
@@ -76,6 +78,9 @@ export default function DetailExam() {
             <div className="exam-container flex items-start gap-x-[24px] mt-[24px]">
                 {/* Content */}
                 <div className="exam-content bg-white w-[80%] rounded-[8px] p-[16px]">
+                    <h3>{submitted && (
+                            <p>{`Đúng: ${correctCount}/${questions.length}`}</p>
+                        )}</h3>
                     <p className="note italic">
                         Choose the correct letter A, B, C, or D
                     </p>
@@ -170,9 +175,7 @@ export default function DetailExam() {
                         để đánh dấu review
                     </p>
                     <div className="status-questions flex items-center gap-1 flex-wrap">
-                        {submitted && (
-                            <p>{`Đúng: ${correctCount}/${questions.length}`}</p>
-                        )}
+                        
                         {questions.length > 0 && questions.map((ques, index) => (
                             <div
                                 key={ques.id}
