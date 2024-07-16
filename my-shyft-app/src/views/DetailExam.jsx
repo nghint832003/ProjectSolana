@@ -143,7 +143,6 @@ export default function DetailExam() {
 
         return () => clearInterval(interval);
     }, []);
-
     const minutes = Math.floor(timeRemaining / 60);
     const seconds = timeRemaining % 60;
     const { id: examID } = useParams();
@@ -158,6 +157,16 @@ export default function DetailExam() {
         }, 0);
         alert("Your score is " + score + " / " + questions.length);
         navigate("/exam");
+    };
+
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    };
+
+    const scrollToQuestion = (questionId) => {
+        questionRefs.current[questionId].scrollIntoView({ behavior: 'smooth' });
     };
 
     return (

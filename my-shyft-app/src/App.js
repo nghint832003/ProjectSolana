@@ -18,7 +18,7 @@ function App() {
     <div className="App">
       <Router>
         <Routes>
-          <Route exact path="/" element={<ListAll />} />
+          <Route exact path="/list" element={<ListAll />} />
           <Route exact path="/create" element={<CreateNFT />} />
 
           <Route exact path="/showTest" element={<TestList  />} />
