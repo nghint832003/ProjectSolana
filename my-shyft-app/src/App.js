@@ -23,9 +23,14 @@ function App() {
 
           <Route exact path="/showTest" element={<TestList  />} />
           <Route path="/createTest" element={<CreateTestPage />} /> 
-                    
-          <Route path="/exam/detail/:id" element={<DetailExam />} />
-          <Route exact path="/" element={<Exams />} />
+        
+          <Route
+                        exact
+                        path="/exam/detail/:id"
+                        element={<DetailExam />}
+                    />
+                    <Route exact path="/exam" element={<Exams />} />
+                
         </Routes>
       </Router>
     </div>
