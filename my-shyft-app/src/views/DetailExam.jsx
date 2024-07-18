@@ -173,7 +173,7 @@ export default function DetailExam() {
         <div className="bg-[#efefef] p-[24px]">
             {/* TITLE */}
             <div className="title flex justify-center items-center gap-x-5">
-                <h2>Đề thi Tiếng Anh</h2>
+                <h2>IELTS Simulation Listening test 6</h2>
                 <Button variant="outlined">Thoát</Button>
             </div>
             {/* EXAM */}
