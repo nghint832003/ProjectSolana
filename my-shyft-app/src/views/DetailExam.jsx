@@ -1,172 +1,70 @@
+// views/DetailExam.jsx
 import React, { useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
+import axios from "axios";
 import Button from "@mui/material/Button";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
-import { Link, Router, useParams, useNavigate } from "react-router-dom";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
-// Đây là giao diện bên trong màn, cần tạo component layout để cho nội dung vào trong
 export default function DetailExam() {
-    const navigate = useNavigate();
-    const [questions, setQuestions] = useState([
-        {
-            id: 1,
-            questionTitle:
-                "What part of speech is the word 'quickly' in the sentence 'She runs quickly'?",
-            options: ["Noun", "Verb", "Adverb", "Adjective"],
-            answer: 3,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 2,
-            questionTitle:
-                "Which type of pronoun is used in the sentence 'They went to the park'?",
-            options: [
-                "Personal pronoun",
-                "Demonstrative pronoun",
-                "Relative pronoun",
-                "Interrogative pronoun",
-            ],
-            answer: 1,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 3,
-            questionTitle:
-                "In the sentence 'The big dog chased the small cat', which words are adjectives?",
-            options: ["big, small", "dog, cat", "chased", "The, the"],
-            answer: 1,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 4,
-            questionTitle:
-                "What is the correct way to form the past tense of the verb 'sing'?",
-            options: ["singed", "sang", "sung", "sang"],
-            answer: 2,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 5,
-            questionTitle:
-                "Which sentence uses the correct subject-verb agreement?",
-            options: [
-                "The dogs bark loudly.",
-                "The dogs barks loudly.",
-                "The dog bark loudly.",
-                "The dog barks loudly.",
-            ],
-            answer: 4,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 6,
-            questionTitle:
-                "What is the function of the comma in the sentence 'On Saturdays, we go to the beach'?",
-            options: [
-                "To separate the subject from the verb",
-                "To set off a dependent clause",
-                "To indicate a pause in the sentence",
-                "To separate two independent clauses",
-            ],
-            answer: 3,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 7,
-            questionTitle: "Which sentence uses the correct capitalization?",
-            options: [
-                "My friend lives in new york.",
-                "My Friend Lives in New York.",
-                "My friend Lives in new York.",
-                "My friend lives in New York.",
-            ],
-            answer: 4,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 8,
-            questionTitle:
-                "What is the function of the apostrophe in the word 'dog's' in the sentence 'The dog's ball was lost'?",
-            options: [
-                "To indicate possession",
-                "To show a contraction",
-                "To form a plural",
-                "To indicate an abbreviation",
-            ],
-            answer: 1,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 9,
-            questionTitle: "Which sentence uses the correct punctuation?",
-            options: [
-                "I love chocolate ice cream, don't you?",
-                "I love chocolate ice cream don't you?",
-                "I love chocolate ice cream; don't you?",
-                "I love chocolate ice cream? don't you?",
-            ],
-            answer: 1,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-        {
-            id: 10,
-            questionTitle:
-                "What is the function of the word 'that' in the sentence 'The book that I read was very interesting'?",
-            options: [
-                "It is a relative pronoun",
-                "It is a demonstrative pronoun",
-                "It is a conjunction",
-                "It is an adjective",
-            ],
-            answer: 1,
-            isChooseAnswer: false,
-            userOptions: null,
-        },
-    ]);
-    const [timeRemaining, setTimeRemaining] = useState(1800); // 30 minutes in seconds
+    const { id } = useParams();
+    const [questions, setQuestions] = useState([]);
+    const [userAnswers, setUserAnswers] = useState({});
+    const [submitted, setSubmitted] = useState(false);
+    const [results, setResults] = useState({});
+    const [correctCount, setCorrectCount] = useState(0);
+    const [timeLeft, setTimeLeft] = useState(3 * 60); // 3 minutes in seconds
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setTimeRemaining((prevTime) => prevTime - 1);
+        axios.get(`http://127.0.0.1:8000/api/testQuestion/${id}`)
+            .then(response => {
+                setQuestions(response.data.testQuestions || []);
+            })
+            .catch(error => {
+                console.error("There was an error fetching the questions!", error);
+            });
+    }, [id]);
+
+    useEffect(() => {
+        if (timeLeft <= 0) {
+            handleSubmit();
+            return;
+        }
+
+        const timerId = setInterval(() => {
+            setTimeLeft(prevTime => prevTime - 1);
         }, 1000);
 
-        return () => clearInterval(interval);
-    }, []);
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    const { id: examID } = useParams();
+        return () => clearInterval(timerId);
+    }, [timeLeft]);
 
-    const handleSubmitExam = () => {
-        // Check answer & calculate score
-        const score = questions.reduce((totalScore, question) => {
-            if (question.isChooseAnswer) {
-                return totalScore + (question.answer === question.userOptions);
+    const handleAnswerChange = (questionId, answer) => {
+        setUserAnswers({ ...userAnswers, [questionId]: answer });
+    };
+
+    const handleSubmit = () => {
+        const newResults = {};
+        let count = 0;
+        questions.forEach(question => {
+            const isCorrect = userAnswers[question.id] === question.CorrectOption;
+            newResults[question.id] = isCorrect;
+            if (isCorrect) {
+                count++;
             }
-            return totalScore;
-        }, 0);
-        alert("Your score is " + score + " / " + questions.length);
-        navigate("/exam");
+        });
+        setResults(newResults);
+        setCorrectCount(count);
+        setSubmitted(true);
     };
 
     const formatTime = (seconds) => {
         const minutes = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-    };
-
-    const scrollToQuestion = (questionId) => {
-        questionRefs.current[questionId].scrollIntoView({ behavior: 'smooth' });
     };
 
     return (
@@ -180,56 +78,76 @@ export default function DetailExam() {
             <div className="exam-container flex items-start gap-x-[24px] mt-[24px]">
                 {/* Content */}
                 <div className="exam-content bg-white w-[80%] rounded-[8px] p-[16px]">
-                    <p className="note italic text-left">
-                        Choose the correct letter A, B or C
+                    <h3>{submitted && (
+                            <p>{`Đúng: ${correctCount}/${questions.length}`}</p>
+                        )}</h3>
+                    <p className="note italic">
+                        Choose the correct letter A, B, C, or D
                     </p>
                     <div className="questions">
-                        {questions.map((question, index) => {
-                            return (
-                                <div
-                                    key={question.id}
-                                    className="relative py-2"
-                                >
+                        {questions.length > 0 ? (
+                            questions.map((question, index) => (
+                                <div key={question.id} className="relative py-2">
                                     <div className="absolute t-0 l-0 question-index p-4 rounded-[50%] bg-blue-100 w-[36px] h-[36px] flex items-center justify-center">
                                         {index + 1}
                                     </div>
-                                    <div className="question-info ml-[66px] mb-1">
+                                    <div className="question-info ml-[46px] mb-1">
                                         <FormLabel
                                             id="demo-radio-buttons-group-label"
-                                            className="!text-black !text-left block"
+                                            className="!text-black"
                                         >
-                                            {question.questionTitle}
+                                            {question.QuestionText}
                                         </FormLabel>
                                         <RadioGroup
                                             aria-labelledby="demo-radio-buttons-group-label"
-                                            name="radio-buttons-group"
-                                            onChange={(event) => {
-                                                question.isChooseAnswer = true;
-                                                question.userOptions =
-                                                    event.target.value;
-                                            }}
+                                            name={`radio-buttons-group-${question.id}`}
+                                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                                         >
                                             <FormControlLabel
-                                                value={1}
+                                                value="A"
                                                 className="!p-0"
                                                 control={<Radio />}
-                                                label={`A. ${question.options[0]}`}
+                                                label={`A. ${question.OptionA}`}
+                                                disabled={submitted}
                                             />
                                             <FormControlLabel
-                                                value={2}
+                                                value="B"
                                                 control={<Radio />}
-                                                label={`B. ${question.options[1]}`}
+                                                label={`B. ${question.OptionB}`}
+                                                disabled={submitted}
                                             />
                                             <FormControlLabel
-                                                value={3}
+                                                value="C"
                                                 control={<Radio />}
-                                                label={`C. ${question.options[2]}`}
+                                                label={`C. ${question.OptionC}`}
+                                                disabled={submitted}
+                                            />
+                                            <FormControlLabel
+                                                value="D"
+                                                control={<Radio />}
+                                                label={`D. ${question.OptionD}`}
+                                                disabled={submitted}
                                             />
                                         </RadioGroup>
+                                        {submitted && (
+                                            <div className="mt-2">
+                                                {results[question.id] ? (
+                                                    <div className="text-green-600 flex items-center">
+                                                        <CheckCircleIcon /> Đúng
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-red-600 flex items-center">
+                                                        <CancelIcon /> Sai. Đáp án đúng: {question.CorrectOption}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            );
-                        })}
+                            ))
+                        ) : (
+                            <div>No questions available</div>
+                        )}
                     </div>
                 </div>
                 {/* Time & Overview */}
@@ -237,17 +155,17 @@ export default function DetailExam() {
                     {/* TIME */}
                     <p>Thời gian còn lại:</p>
                     <h3 className="text-red-500 text-[24px] font-bold">
-                        {minutes.toString().padStart(2, "0")}:
-                        {seconds.toString().padStart(2, "0")}
+                        {formatTime(timeLeft)}
                     </h3>
-                    <Button
-                        variant="contained"
-                        className="w-[100%] !my-3"
-                        onClick={() => handleSubmitExam()}
-                    >
-                        NỘP BÀI
-                    </Button>
-
+                    {!submitted && (
+                        <Button
+                            variant="contained"
+                            className="w-[100%] !my-3"
+                            onClick={handleSubmit}
+                        >
+                            NỘP BÀI
+                        </Button>
+                    )}
                     {/* OVERVIEW */}
                     <p className="text-[14px] text-red-700">
                         Khôi phục/Lưu bài làm
@@ -257,20 +175,15 @@ export default function DetailExam() {
                         để đánh dấu review
                     </p>
                     <div className="status-questions flex items-center gap-1 flex-wrap">
-                        {questions.map((ques, index) => {
-                            return (
-                                <div
-                                    key={ques.id}
-                                    className={`!w-[36px] !h-[36px] border border-1 border-gray rounded-[12px] flex items-center justify-center ${
-                                        ques.isChooseAnswer
-                                            ? "bg-black text-white"
-                                            : ""
-                                    }`}
-                                >
-                                    {index + 1}
-                                </div>
-                            );
-                        })}
+                        
+                        {questions.length > 0 && questions.map((ques, index) => (
+                            <div
+                                key={ques.id}
+                                className="!w-[36px] !h-[36px] border border-1 border-gray rounded-[12px] flex items-center justify-center"
+                            >
+                                {index + 1}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

@@ -18,19 +18,14 @@ function App() {
     <div className="App">
       <Router>
         <Routes>
-          <Route exact path="/list" element={<ListAll />} />
+          <Route exact path="/" element={<ListAll />} />
           <Route exact path="/create" element={<CreateNFT />} />
 
           <Route exact path="/showTest" element={<TestList  />} />
           <Route path="/createTest" element={<CreateTestPage />} /> 
-        
-          <Route
-                        exact
-                        path="/exam/detail/:id"
-                        element={<DetailExam />}
-                    />
-                    <Route exact path="/exam" element={<Exams />} />
-                
+                    
+          <Route path="/exam/detail/:id" element={<DetailExam />} />
+          <Route exact path="/" element={<Exams />} />
         </Routes>
       </Router>
     </div>
