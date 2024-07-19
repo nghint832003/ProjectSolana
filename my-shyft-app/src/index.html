@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>solana</title>
+    <!-- Production (minified) -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+</head>
+
+<body>
+    <button onclick="connect()">connect</button>
+    <button onclick="minnft()">NFT</button>
+    <button onclick="transferSol()">trans</button>
+    <input type="file" id="fileInput">
+    <script>
+
+        // -----NFT----//
+        const PRIV_KEY = "m6K49DCC-ibT6BUA";
+
+        const connect =  async() => {
+            await window.phantom.solana.connect();
+
+            let publickey = window.phantom.solana.publickey.toBase58();
+
+            console.log(publickey);
+        }
+        //https://api.shyft.to/sol/v1
+        const minnft = async () => {
+            var myHeaders = new Headers();
+            myHeaders.append("x-api-key", PRIV_KEY);
+            myHeaders.append("Content-Type", "multipart/form-data");
+
+            const fileInput = document.querySelector("#fileInput")
+
+            var formdata = new FormData();
+            formdata.append("network", "devnet");
+            formdata.append("wallet", "CBjikU7vs35pUMJAfx4nDdc8N8tn3SJ71u1YvWwcboj9");
+            formdata.append("name", "CNTT2 NFT");
+            formdata.append("symbol", "FPL");
+            formdata.append("description", "Shyft makes Web3 so easy!");
+            formdata.append("attributes", '[{"trait_type":"dev power","value":"over 900"}]');
+            formdata.append("external_url", "https://shyft.to");
+            formdata.append("max_supply", "0");
+            formdata.append("royalty", "5");
+            formdata.append("file", fileInput.files[0], "index.png");
+            formdata.append("nft_receiver", "5KW2twHzRsAaiLeEx4zYNV35CV2hRrZGw7NYbwMfL4a2");
+            formdata.append('service_charge', '{ "receiver": "499qpPLdqgvVeGvvNjsWi27QHpC8GPkPfuL5Cn2DtZJe",  "token": "DjMA5cCK95X333t7SgkpsG5vC9wMk7u9JV4w8qipvFE8",  "amount": 0.01}');
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: formdata,
+                redirect: 'follow'
+            };
+
+            fetch("https://api.shyft.to/sol/v1/nft/create_detach", requestOptions)
+                .then(response => response.text())
+                .then(result => console.log(result))
+                .catch(error => console.log('error', error));
+        }
+        const transferSol = async () => {
+            var myHeaders = new Headers();
+            myHeaders.append("x-api-key", PRIV_KEY);
+            myHeaders.append("Content-Type", "application/json");
+
+            var raw = JSON.stringify({
+                "network": "devnet",
+                "from_address": "BFefyp7jNF5Xq2A4JDLLFFGpxLq5oPEFKBAQ46KJHW2R",
+                "to_address": "2fmz8SuNVyxEP6QwKQs6LNaT2ATszySPEJdhUDesxktc",
+                "amount": .1,
+                "fee_payer": "GE4kh5FsCDWeJfqLsKx7zC9ijkqKpCuYQxh8FYBiTJe"
+            });
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+
+            fetch("https://api.shyft.to/sol/v1/wallet/send_sol", requestOptions)
+                .then(response => response.text())
+                .then(result => console.log(result))
+                .catch(error => console.log('error', error));
+        }
+    </script>
+</body>
+
+</html>
