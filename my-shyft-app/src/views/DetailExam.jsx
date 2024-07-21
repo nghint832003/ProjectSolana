@@ -1,4 +1,3 @@
-// views/DetailExam.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from 'react-router-dom';
 import axios from "axios";
@@ -19,6 +18,7 @@ export default function DetailExam() {
     const [correctCount, setCorrectCount] = useState(0);
     const [timeLeft, setTimeLeft] = useState(3 * 60); // 3 minutes in seconds
     const [timeTaken, setTimeTaken] = useState(0); // time taken in seconds
+    const [tabSwitches, setTabSwitches] = useState(0); // Số lần người dùng chuyển tab
     const questionRefs = useRef({});
     const timerIdRef = useRef(null);
 
@@ -30,6 +30,18 @@ export default function DetailExam() {
             .catch(error => {
                 console.error("There was an error fetching the questions!", error);
             });
+
+        // Event listener để theo dõi sự kiện chuyển tab
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                setTabSwitches(prev => prev + 1);
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [id]);
 
     useEffect(() => {
@@ -65,6 +77,25 @@ export default function DetailExam() {
         setResults(newResults);
         setCorrectCount(count);
         setSubmitted(true);
+
+        // Gửi kết quả đến API để lưu trữ
+        const data = {
+            //UserTestID: 1, // Thay bằng giá trị thực tế của UserTestID
+            TotalQuestions: questions.length,
+            CorrectAnswers: count,
+            Score: (count / questions.length) * 100, // Giả sử điểm là phần trăm đúng
+            //public_key: "public_key_example", // Thay bằng giá trị thực tế của public_key
+            time_work: 3 * 60 - timeLeft, // thời gian làm bài
+            next_page: tabSwitches, // số lần chuyển tab
+        };
+
+        axios.post('http://127.0.0.1:8000/api/submit-result', data)
+            .then(response => {
+                console.log('Result saved successfully', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error saving the result!', error);
+            });
     };
 
     const formatTime = (seconds) => {
@@ -88,12 +119,15 @@ export default function DetailExam() {
             <div className="exam-container flex items-start gap-x-[24px] mt-[24px]">
                 {/* Content */}
                 <div className="exam-content bg-white w-[80%] rounded-[8px] p-[16px]">
-                    <h3>{submitted && (
+                    <h3>
+                        {submitted && (
                             <>
                                 <p>{`Đúng: ${correctCount}/${questions.length}`}</p>
                                 <p>{`Thời gian làm bài: ${formatTime(timeTaken)}`}</p>
+                                <p>{`Số lần chuyển tab: ${tabSwitches}`}</p>
                             </>
-                        )}</h3>
+                        )}
+                    </h3>
                     <p className="note italic">
                         Choose the correct letter A, B, C, or D
                     </p>
@@ -192,7 +226,6 @@ export default function DetailExam() {
                         để đánh dấu review
                     </p>
                     <div className="status-questions flex items-center gap-1 flex-wrap">
-                        
                         {questions.length > 0 && questions.map((ques, index) => (
                             <div
                                 key={ques.id}
