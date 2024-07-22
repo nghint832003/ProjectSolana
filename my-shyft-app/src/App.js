@@ -11,6 +11,7 @@ import CreateTestPage from "./components/CreateTestPage";
 
 import DetailExam from "./views/DetailExam";
 import Exams from "./views/Exams";
+import CreateUniqueAsset from "./components/CreateUniqueAsset";
 
 
 function App() {
@@ -26,6 +27,9 @@ function App() {
                     
           <Route path="/exam/detail/:id" element={<DetailExam />} />
           <Route exact path="/" element={<Exams />} />
+
+          <Route path="/createNFT" element={<CreateUniqueAsset />} />
+
         </Routes>
       </Router>
     </div>
