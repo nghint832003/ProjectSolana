@@ -103,15 +103,13 @@ export default function DetailExam() {
             const response = await axios.post('http://127.0.0.1:8000/api/submit-result', data);
             console.log('Result saved successfully', response.data);
 
-            // Create unique asset but do not navigate
+            // Create unique asset
             const assetResponse = await createUniqueAsset();
             if (assetResponse && assetResponse.id) {
                 // Set the asset ID in session storage
                 sessionStorage.setItem('unique_asset_id', assetResponse.id);
-                // Wait 20 seconds before showing the transfer button
-                setTimeout(() => {
-                    setShowTransferButton(true);
-                }, 20000);
+                // Show the transfer button immediately after submission
+                setShowTransferButton(true);
             }
         } catch (error) {
             console.error('There was an error saving the result or creating the unique asset!', error);
@@ -148,7 +146,23 @@ export default function DetailExam() {
         }
     };
 
-    // Transfer item function
+    //Store Approval
+    const storeApproval = async (publicKey, consentUrl) => {
+        try {
+            const response = await axios.post('http://127.0.0.1:8000/api/post-approval', {
+                public_key: publicKey,
+                consent_url: consentUrl,
+                created_at: new Date().toISOString(), // Current date and time
+                updated_at: new Date().toISOString(), // Current date and time
+            });
+            console.log('Approval stored successfully', response.data);
+        } catch (error) {
+            console.error('There was an error storing the approval!', error);
+        }
+    };
+    
+
+    // Transfer item function and store Approval
     const transferItem = async (itemId) => {
         const publicKey = sessionStorage.getItem('public_key');
         const options = {
@@ -164,16 +178,22 @@ export default function DetailExam() {
                 quantity: '1', // Fixed quantity
             },
         };
-
+    
         try {
             const response = await axios.request(options);
             console.log('Item transferred successfully', response.data);
+            
+            // Save consentUrl and publicKey to API Approval
+            const consentUrl = response.data.consentUrl;
+            await storeApproval(publicKey, consentUrl);
+            
             // Optionally handle success response, e.g., show a notification
         } catch (error) {
             console.error('There was an error transferring the item!', error);
             // Optionally handle error response, e.g., show an error notification
         }
     };
+    
 
     // Format time helper
     const formatTime = (seconds) => {
@@ -219,7 +239,6 @@ export default function DetailExam() {
                                         {index + 1}
                                     </div>
                                     <div className="question-info ml-[46px] mb-1">
-
                                         <FormLabel
                                             id={`radio-buttons-group-label-${question.id}`} // Unique id for each FormLabel
                                         >
@@ -290,17 +309,19 @@ export default function DetailExam() {
                     )}
                     {showTransferButton && ( // Conditionally render the transfer button
                         <Button
-                            variant="contained"
-                            className="w-[100%] !my-3"
-                            onClick={async () => {
-                                const uniqueAssetId = sessionStorage.getItem('unique_asset_id');
-                                if (uniqueAssetId) {
-                                    await transferItem(uniqueAssetId);
-                                }
-                            }}
-                        >
-                            Nhận chứng chỉ
-                        </Button>
+                        variant="contained"
+                        className="w-[100%] !my-3"
+                        onClick={async () => {
+                            const uniqueAssetId = sessionStorage.getItem('unique_asset_id');
+                            if (uniqueAssetId) {
+                                setShowTransferButton(false); // Hide button immediately after click
+                                await new Promise(resolve => setTimeout(resolve, 20000)); // 20 seconds delay
+                                await transferItem(uniqueAssetId);
+                            }
+                        }}
+                    >
+                        Nhận chứng chỉ
+                    </Button>
                     )}
                     <p className="text-[14px] text-red-700">
                         Khôi phục/Lưu bài làm
