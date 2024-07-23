@@ -33,13 +33,14 @@ const CreateUniqueAsset = () => {
       },
       data: {
         details: {
-          attributes: attributes,
+          //attributes: attributes,
           collectionId: '6cfdd0b2-9e0c-43ce-8311-eb0f622f330f', // Giá trị cố định
           description: description,
           imageUrl: imageUrl,
-          name: name
+          name: name,
+          price: 3
         },
-        destinationUserReferenceId: '1' // Giá trị cố định
+        destinationUserReferenceId: '1', // Giá trị cố định
       }
     };
 
@@ -90,7 +91,7 @@ const CreateUniqueAsset = () => {
             required
           />
         </div>
-        {attributes.map((attr, index) => (
+        {/* {attributes.map((attr, index) => (
           <div className="form-group mt-3" key={index}>
             <label htmlFor={`traitType-${index}`}>Attribute {index + 1} Trait Type:</label>
             <input
@@ -115,7 +116,7 @@ const CreateUniqueAsset = () => {
               required
             />
           </div>
-        ))}
+        ))} */}
         <button type="button" className="btn btn-secondary mt-3" onClick={addAttribute}>
           Add Another Attribute
         </button>
