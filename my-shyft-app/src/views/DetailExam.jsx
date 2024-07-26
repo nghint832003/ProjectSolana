@@ -149,9 +149,10 @@ export default function DetailExam() {
     //Store Approval
     const storeApproval = async (publicKey, consentUrl) => {
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/post-approval', {
+            const response = await axios.post('http://127.0.0.1:8000/api/approvals', {
                 public_key: publicKey,
                 consent_url: consentUrl,
+                status: 0, // Add status here
                 created_at: new Date().toISOString(), // Current date and time
                 updated_at: new Date().toISOString(), // Current date and time
             });

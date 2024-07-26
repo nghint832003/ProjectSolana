@@ -49,3 +49,12 @@ a {
   text-decoration: none !important;
   color: black !important;
 }
+/* App.css */
+.container {
+  max-width: 800px;
+  margin: auto;
+}
+
+.table {
+  margin-top: 20px;
+}
