@@ -17,7 +17,7 @@ export default function DetailExam() {
     const [submitted, setSubmitted] = useState(false);
     const [results, setResults] = useState({});
     const [correctCount, setCorrectCount] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(3 * 60); // 3 minutes in seconds
+    const [timeLeft, setTimeLeft] = useState(10 * 60); // 3 minutes in seconds
     const [timeTaken, setTimeTaken] = useState(0); // time taken in seconds
     const [tabSwitches, setTabSwitches] = useState(0); // Number of tab switches
     const [showTransferButton, setShowTransferButton] = useState(false); // New state for showing transfer button
@@ -70,7 +70,7 @@ export default function DetailExam() {
 
     const handleSubmit = useCallback(async () => {
         clearInterval(timerIdRef.current); // Stop the timer
-        setTimeTaken(3 * 60 - timeLeft); // Calculate time taken
+        setTimeTaken(10 * 60 - timeLeft); // Calculate time taken
 
         console.log("User Answers:", userAnswers); // Check the user answers
 
@@ -107,7 +107,7 @@ export default function DetailExam() {
             console.log('Result saved successfully', response.data);
 
             // Check conditions for creating unique asset
-            if (count > 2 && tabSwitches <= 2) {
+            if (count > 20 && tabSwitches <= 2) {
                 const assetResponse = await createUniqueAsset();
                 if (assetResponse && assetResponse.id) {
                     // Set the asset ID in session storage
