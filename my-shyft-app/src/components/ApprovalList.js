@@ -1,97 +1,131 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Button,
+  Alert,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+// Styled components for Material-UI Table
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${TableCell.head}`]: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+  },
+  [`&.${TableCell.body}`]: {
+    fontSize: 14,
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+}));
 
 const ApprovalList = () => {
-    const [approvals, setApprovals] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [approvals, setApprovals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-    useEffect(() => {
-        const fetchApprovals = async () => {
-            try {
-                const response = await axios.get('http://127.0.0.1:8000/api/approvals');
-                console.log('API Response:', response.data); // Log API response
-                setApprovals(response.data);
-            } catch (error) {
-                setError('There was an error fetching the approvals');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchApprovals();
-    }, []);
-
-    const updateApprovalStatus = async (id) => {
-        try {
-            const response = await axios.put(`http://127.0.0.1:8000/api/approvals/${id}/status`);
-            console.log('Update Response:', response.data); // Log update response
-            setApprovals(prevApprovals =>
-                prevApprovals.map(approval =>
-                    approval.id === id ? { ...approval, status: 1 } : approval
-                )
-            );
-        } catch (error) {
-            console.error('There was an error updating the approval status', error);
-        }
+  useEffect(() => {
+    const fetchApprovals = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/approvals');
+        setApprovals(response.data);
+      } catch (error) {
+        setError('There was an error fetching the approvals');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    fetchApprovals();
+  }, []);
 
-    if (error) {
-        return <div>{error}</div>;
+  const updateApprovalStatus = async (id) => {
+    try {
+      if (window.confirm('Are you sure you want to approve this item?')) {
+        const response = await axios.put(`http://127.0.0.1:8000/api/approvals/${id}/status`);
+        setApprovals(prevApprovals =>
+          prevApprovals.map(approval =>
+            approval.id === id ? { ...approval, status: 1 } : approval
+          )
+        );
+        setSuccess('Approval status updated successfully');
+      }
+    } catch (error) {
+      setError('Error updating approval status');
     }
+  };
 
-    return (
-        <div className="container mt-4">
-            <h2 className="mb-4">Approval List</h2>
-            {approvals.length > 0 ? (
-                <table className="table table-striped table-bordered">
-                    <thead className="thead-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Public Key</th>
-                            <th>Consent URL</th>
-                            <th>Status</th>
-                            <th>Created At</th>
-                            <th>Updated At</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {approvals.map(approval => (
-                            <tr key={approval.id}>
-                                <td>{approval.id}</td>
-                                <td>{approval.public_key}</td>
-                                <td>
-                                    <a href={approval.consent_url} target="_blank" rel="noopener noreferrer">
-                                        {approval.consent_url}
-                                    </a>
-                                </td>
-                                <td>{approval.status == 1 ? 'Approved' : 'Pending'}</td>
-                                <td>{new Date(approval.created_at).toLocaleString()}</td>
-                                <td>{new Date(approval.updated_at).toLocaleString()}</td>
-                                <td>
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => updateApprovalStatus(approval.id)}
-                                        disabled={approval.status === 1}
-                                    >
-                                        {approval.status == 1 ? 'Approved' : 'Pending'}
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <p>No approvals found</p>
-            )}
-        </div>
-    );
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  return (
+    <div    >
+      <Typography variant="h4" gutterBottom>Approval List</Typography>
+      {error && <Alert severity="error">{error}</Alert>}
+      {success && <Alert severity="success">{success}</Alert>}
+      {approvals.length > 0 ? (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>ID</StyledTableCell>
+                <StyledTableCell>Public Key</StyledTableCell>
+                <StyledTableCell>Consent URL</StyledTableCell>
+                <StyledTableCell>Status</StyledTableCell>
+                <StyledTableCell>Created At</StyledTableCell>
+                <StyledTableCell>Updated At</StyledTableCell>
+                <StyledTableCell>Action</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {approvals.map((approval) => (
+                <StyledTableRow key={approval.id}>
+                  <StyledTableCell>{approval.id}</StyledTableCell>
+                  <StyledTableCell>{approval.public_key}</StyledTableCell>
+                  <StyledTableCell>
+                    <a href={approval.consent_url} target="_blank" rel="noopener noreferrer">
+                      Access
+                    </a>
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {approval.status == 1 ? 'Approved' : 'Pending'}
+                  </StyledTableCell>
+                  <StyledTableCell>{new Date(approval.created_at).toLocaleString()}</StyledTableCell>
+                  <StyledTableCell>{new Date(approval.updated_at).toLocaleString()}</StyledTableCell>
+                  <StyledTableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => updateApprovalStatus(approval.id)}
+                      disabled={approval.status == 1}
+                    >
+                      Approve
+                    </Button>
+                  </StyledTableCell>
+                </StyledTableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Typography>No approvals found</Typography>
+      )}
+    </div>
+  );
 };
 
 export default ApprovalList;

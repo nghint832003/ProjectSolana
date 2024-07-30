@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import { Button, Card, CardContent, Typography, TextField, Container, Grid } from '@mui/material';
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 
@@ -43,37 +43,46 @@ const ListAll = () => {
     };
 
     return (
-        <div className="grd-back">
-            <div className="container-lg">
-                {!connStatus && (
-                    <div className="card border border-primary rounded py-3 px-5 w-50 mx-auto">
-                        <div className="card-body text-center">
-                            <h2 className="card-title p-2">Connect Your Wallet</h2>
-                            <button className="btn btn-primary mt-5 px-3" onClick={solanaConnect}>Connect Phantom Wallet</button>
-                        </div>
-                    </div>
-                )}
-                {connStatus && (
-                    <div className="w-50 border border-primary rounded-3 mx-auto">
-                        <div className="form-container p-3">
-                            <form>
-                                <div className="row d-flex justify-content-center">
-                                    <div className="col-12 p-2">
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder="Enter Wallet Id"
-                                            value={wallID}
-                                            readOnly
-                                        />
-                                    </div>
+        <Container maxWidth="sm" style={{ marginTop: '2rem' }}>
+            <Grid container spacing={2} justifyContent="center">
+                <Grid item xs={12}>
+                    <Card variant="outlined">
+                        <CardContent>
+                            {!connStatus ? (
+                                <div className="text-center">
+                                    <Typography variant="h5" gutterBottom>
+                                        Connect Your Wallet
+                                    </Typography>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={solanaConnect}
+                                        style={{ marginTop: '1rem' }}
+                                    >
+                                        Connect Phantom Wallet
+                                    </Button>
                                 </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+                            ) : (
+                                <div className="text-center">
+                                    <Typography variant="h6" gutterBottom>
+                                        Wallet Connected
+                                    </Typography>
+                                    <TextField
+                                        fullWidth
+                                        variant="outlined"
+                                        label="Wallet ID"
+                                        value={wallID}
+                                        InputProps={{
+                                            readOnly: true,
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
+        </Container>
     );
 };
 

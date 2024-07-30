@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Modal from 'react-modal';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Modal, TextField, Typography, Box, CircularProgress, Alert } from '@mui/material';
 
 const TestList = () => {
     const [tests, setTests] = useState([]);
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
     const [selectedTestName, setSelectedTestName] = useState('');
     const [editQuestion, setEditQuestion] = useState(null);
-    const [editModalIsOpen, setEditModalIsOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
 
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/api/tests')
             .then(response => {
-                console.log(response.data);
                 if (response.data && Array.isArray(response.data.tests)) {
                     setTests(response.data.tests);
                 } else {
@@ -34,14 +32,13 @@ const TestList = () => {
         setLoading(true);
         axios.get(`http://127.0.0.1:8000/api/testQuestion/${testId}`)
             .then(response => {
-                console.log(response.data);
                 if (response.data && Array.isArray(response.data.testQuestions)) {
                     setQuestions(response.data.testQuestions);
                 } else {
                     setQuestions([]);
                 }
                 setSelectedTestName(testName);
-                setModalIsOpen(true);
+                setModalOpen(true);
                 setLoading(false);
             })
             .catch(error => {
@@ -50,18 +47,18 @@ const TestList = () => {
             });
     };
 
-    const closeModal = () => {
-        setModalIsOpen(false);
+    const handleModalClose = () => {
+        setModalOpen(false);
         setQuestions([]);
     };
 
-    const openEditModal = (question) => {
+    const handleEditModalOpen = (question) => {
         setEditQuestion(question);
-        setEditModalIsOpen(true);
+        setEditModalOpen(true);
     };
 
-    const closeEditModal = () => {
-        setEditModalIsOpen(false);
+    const handleEditModalClose = () => {
+        setEditModalOpen(false);
         setEditQuestion(null);
     };
 
@@ -75,11 +72,11 @@ const TestList = () => {
         axios.put(`http://127.0.0.1:8000/api/testQuestion/${editQuestion.id}`, editQuestion)
             .then(response => {
                 setQuestions(questions.map(q => (q.id === editQuestion.id ? editQuestion : q)));
-                closeEditModal();
+                handleEditModalClose();
             })
             .catch(error => {
                 setError(error);
-                closeEditModal();
+                handleEditModalClose();
             });
     };
 
@@ -96,132 +93,158 @@ const TestList = () => {
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <CircularProgress />;
     }
 
     if (error) {
-        return <div>Error: {error.message}</div>;
+        return <Alert severity="error">Error: {error.message}</Alert>;
     }
 
     return (
-        <div className="container mt-5">
-            <h1>Danh sách bài kiểm tra</h1>
-            <ul className="list-group">
-                {tests.map(test => (
-                    <li key={test.id} className="list-group-item d-flex justify-content-between align-items-center">
-                        {test.TestName}
-                        <button className="btn btn-primary" onClick={() => fetchQuestions(test.id, test.TestName)}>Xem câu hỏi</button>
-                    </li>
-                ))}
-            </ul>
+        <div style={{ padding: 20 }}>
+            <Typography variant="h4" gutterBottom>Danh sách bài kiểm tra</Typography>
+            <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Bài kiểm tra</TableCell>
+                            <TableCell>Hành động</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {tests.map(test => (
+                            <TableRow key={test.id}>
+                                <TableCell>{test.TestName}</TableCell>
+                                <TableCell>
+                                    <Button variant="contained" color="primary" onClick={() => fetchQuestions(test.id, test.TestName)}>Xem câu hỏi</Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
             <Modal
-                isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                contentLabel="Danh sách câu hỏi"
+                open={modalOpen}
+                onClose={handleModalClose}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
             >
-                <div className="modal-dialog" role="document">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Các câu hỏi cho bài kiểm tra {selectedTestName}</h5>
-                            <button type="button" className="close" onClick={closeModal}>
-                                <span>&times;</span>
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <table className="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Question ID</th>
-                                        <th>Test ID</th>
-                                        <th>Question Text</th>
-                                        <th>Option A</th>
-                                        <th>Option B</th>
-                                        <th>Option C</th>
-                                        <th>Option D</th>
-                                        <th>Correct Option</th>
-                                        <th>Question Type</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {Array.isArray(questions) && questions.map(question => (
-                                        <tr key={question.id}>
-                                            <td>{question.id}</td>
-                                            <td>{question.test_id}</td>
-                                            <td>{question.QuestionText}</td>
-                                            <td>{question.OptionA}</td>
-                                            <td>{question.OptionB}</td>
-                                            <td>{question.OptionC}</td>
-                                            <td>{question.OptionD}</td>
-                                            <td>{question.CorrectOption}</td>
-                                            <td>{question.QuestionType}</td>
-                                            <td>
-                                                <button className="btn btn-secondary mr-2" onClick={() => openEditModal(question)}>Edit</button>
-                                                <button className="btn btn-danger" onClick={() => handleDeleteQuestion(question.id)}>Delete</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={closeModal}>Đóng</button>
-                        </div>
-                    </div>
-                </div>
+                <Box sx={{ width: '90%', maxWidth: 1200, margin: 'auto', padding: 4, backgroundColor: 'white', borderRadius: 2, height: '80vh', overflow: 'auto' }}>
+                    <Typography variant="h6" id="modal-title">Các câu hỏi cho bài kiểm tra {selectedTestName}</Typography>
+                    <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Question ID</TableCell>
+                                    <TableCell>Test ID</TableCell>
+                                    <TableCell>Question Text</TableCell>
+                                    <TableCell>Option A</TableCell>
+                                    <TableCell>Option B</TableCell>
+                                    <TableCell>Option C</TableCell>
+                                    <TableCell>Option D</TableCell>
+                                    <TableCell>Correct Option</TableCell>
+                                    <TableCell>Question Type</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {questions.map(question => (
+                                    <TableRow key={question.id}>
+                                        <TableCell>{question.id}</TableCell>
+                                        <TableCell>{question.test_id}</TableCell>
+                                        <TableCell>{question.QuestionText}</TableCell>
+                                        <TableCell>{question.OptionA}</TableCell>
+                                        <TableCell>{question.OptionB}</TableCell>
+                                        <TableCell>{question.OptionC}</TableCell>
+                                        <TableCell>{question.OptionD}</TableCell>
+                                        <TableCell>{question.CorrectOption}</TableCell>
+                                        <TableCell>{question.QuestionType}</TableCell>
+                                        <TableCell>
+                                            <Button variant="outlined" color="secondary" onClick={() => handleEditModalOpen(question)}>Edit</Button>
+                                            <Button variant="contained" color="error" onClick={() => handleDeleteQuestion(question.id)}>Delete</Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <Button variant="contained" color="secondary" onClick={handleModalClose} sx={{ marginTop: 2 }}>Đóng</Button>
+                </Box>
             </Modal>
 
             {editQuestion && (
                 <Modal
-                    isOpen={editModalIsOpen}
-                    onRequestClose={closeEditModal}
-                    contentLabel="Chỉnh sửa câu hỏi"
+                    open={editModalOpen}
+                    onClose={handleEditModalClose}
+                    aria-labelledby="edit-modal-title"
+                    aria-describedby="edit-modal-description"
                 >
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Chỉnh sửa câu hỏi</h5>
-                                <button type="button" className="close" onClick={closeEditModal}>
-                                    <span>&times;</span>
-                                </button>
-                            </div>
-                            <div className="modal-body">
-                                <form onSubmit={handleEditSubmit}>
-                                    <div className="form-group">
-                                        <label>Question Text:</label>
-                                        <input type="text" className="form-control" name="QuestionText" value={editQuestion.QuestionText} onChange={handleEditChange} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Option A:</label>
-                                        <input type="text" className="form-control" name="OptionA" value={editQuestion.OptionA} onChange={handleEditChange} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Option B:</label>
-                                        <input type="text" className="form-control" name="OptionB" value={editQuestion.OptionB} onChange={handleEditChange} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Option C:</label>
-                                        <input type="text" className="form-control" name="OptionC" value={editQuestion.OptionC} onChange={handleEditChange} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Option D:</label>
-                                        <input type="text" className="form-control" name="OptionD" value={editQuestion.OptionD} onChange={handleEditChange} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Correct Option:</label>
-                                        <input type="text" className="form-control" name="CorrectOption" value={editQuestion.CorrectOption} onChange={handleEditChange} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Question Type:</label>
-                                        <input type="text" className="form-control" name="QuestionType" value={editQuestion.QuestionType} onChange={handleEditChange} />
-                                    </div>
-                                    <button type="submit" className="btn btn-primary">Save</button>
-                                    <button type="button" className="btn btn-secondary" onClick={closeEditModal}>Cancel</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    <Box sx={{ width: 400, margin: 'auto', padding: 4, backgroundColor: 'white', borderRadius: 2 }}>
+                        <Typography variant="h6" id="edit-modal-title">Chỉnh sửa câu hỏi</Typography>
+                        <form onSubmit={handleEditSubmit}>
+                            <TextField
+                                label="Question Text"
+                                name="QuestionText"
+                                value={editQuestion.QuestionText}
+                                onChange={handleEditChange}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <TextField
+                                label="Option A"
+                                name="OptionA"
+                                value={editQuestion.OptionA}
+                                onChange={handleEditChange}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <TextField
+                                label="Option B"
+                                name="OptionB"
+                                value={editQuestion.OptionB}
+                                onChange={handleEditChange}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <TextField
+                                label="Option C"
+                                name="OptionC"
+                                value={editQuestion.OptionC}
+                                onChange={handleEditChange}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <TextField
+                                label="Option D"
+                                name="OptionD"
+                                value={editQuestion.OptionD}
+                                onChange={handleEditChange}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <TextField
+                                label="Correct Option"
+                                name="CorrectOption"
+                                value={editQuestion.CorrectOption}
+                                onChange={handleEditChange}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <TextField
+                                label="Question Type"
+                                name="QuestionType"
+                                value={editQuestion.QuestionType}
+                                onChange={handleEditChange}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <Box sx={{ marginTop: 2 }}>
+                                <Button type="submit" variant="contained" color="primary">Save</Button>
+                                <Button type="button" variant="outlined" color="secondary" onClick={handleEditModalClose} sx={{ marginLeft: 2 }}>Cancel</Button>
+                            </Box>
+                        </form>
+                    </Box>
                 </Modal>
             )}
         </div>
