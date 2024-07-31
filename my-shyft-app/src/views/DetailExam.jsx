@@ -72,7 +72,7 @@ export default function DetailExam() {
         clearInterval(timerIdRef.current); // Stop the timer
         setTimeTaken(10 * 60 - timeLeft); // Calculate time taken
 
-        console.log("User Answers:", userAnswers); // Check the user answers
+        //console.log("User Answers:", userAnswers); // Check the user answers
 
         const newResults = {};
         let count = 0;
@@ -80,7 +80,7 @@ export default function DetailExam() {
             const userAnswer = userAnswers[question.id];
             const correctAnswer = question.CorrectOption;
             const isCorrect = userAnswer == correctAnswer;
-            console.log(`Question ID: ${question.id}, User Answer: ${userAnswer}, Correct Answer: ${correctAnswer}, Is Correct: ${isCorrect}`);
+            //console.log(`Question ID: ${question.id}, User Answer: ${userAnswer}, Correct Answer: ${correctAnswer}, Is Correct: ${isCorrect}`);
             newResults[question.id] = isCorrect;
             if (isCorrect) {
                 count++;
@@ -107,7 +107,7 @@ export default function DetailExam() {
             console.log('Result saved successfully', response.data);
 
             // Check conditions for creating unique asset
-            if (count > 20 && tabSwitches <= 2) {
+            if (count > 1 && tabSwitches <= 2) {
                 const assetResponse = await createUniqueAsset();
                 if (assetResponse && assetResponse.id) {
                     // Set the asset ID in session storage

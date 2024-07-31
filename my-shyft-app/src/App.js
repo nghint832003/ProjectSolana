@@ -18,7 +18,7 @@ function App() {
                 <Routes>
                     <Route element={<Layout />}>
                         <Route path="/" element={<ListAll />} />
-                        <Route path="/create" element={<CreateNFT />} />
+                        {/* <Route path="/create" element={<CreateNFT />} /> */}
                         <Route path="/showTest" element={<TestList />} />
                         <Route path="/createTest" element={<CreateTestPage />} />
                         <Route path="/approvals" element={<ApprovalList />} />
